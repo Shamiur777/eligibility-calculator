@@ -10,15 +10,75 @@ exports it as CSV for the sales team.
 Layout:
 
 - `hulkenstein-eligibility-calculator-bangla-1.html` - the calculator. One
-  self-contained file: HTML, CSS, JavaScript, the eligibility rules and all
-  images are inside it. It needs no other files.
+  self-contained file: HTML, CSS, JavaScript, the eligibility rules, the
+  images and the font (QNA Books, embedded) are inside it. It needs no other
+  files and loads nothing from external servers except the outbound links.
 - `index.html` - a redirect to the calculator file. Only needed if the site is
   served from the repo root and you want `/` to open the calculator.
 - `leads-backend/` - Node/Express + SQLite API (`POST /api/leads`, CSV export).
   See `leads-backend/README.md`.
+- `fonts/` - the font licence (`OFL.txt`) and the source woff2, kept for
+  reference only. The calculator does not load anything from this folder.
 - `test/engine.test.js` - tests for the eligibility engine.
 - `leads-backend/test/api.test.js` - tests for the API.
 - `package.json` - root `npm test` script.
+
+## What changed in this version
+
+### At a glance
+
+Do these when deploying:
+
+1. Replace the calculator HTML file with the new one.
+2. Backend: set a real `ADMIN_API_KEY` (16+ characters). Without it the list and export endpoints return 503.
+3. If the API runs behind a proxy, set `TRUST_PROXY=1`.
+4. The calculator now POSTs leads to `LEADS_API_URL` (default `"/api/leads"`). Make sure the API is reachable there.
+5. After deploying, submit one test lead and check that it appears in `/api/leads/export.csv`.
+
+### Calculator page (frontend)
+
+- Eligibility year rules were never applied, because the reference year was the student's own HSC year. They are now counted from `ADMISSION.currentHscBatch` (2026, session 2026-27).
+- Leads were never sent to the backend. They are now POSTed, fire-and-forget: the page works even if the API is down.
+- Form validation: SSC/HSC GPA 1-5, subject GPAs 0-5, Bangladeshi mobile number (Bangla digits are accepted and normalised, for example ০১৭১১-২২৩৩৪৪ becomes 01711223344), and email format. Invalid fields get a red border.
+- The restart button now also resets the result tab.
+- Font: the whole page now uses the QNA Books font (Bangla glyphs, embedded in the HTML, so it is still a single self-contained file). English text falls back to Times New Roman. The Google Fonts import was removed, so the page no longer loads anything from external servers except the outbound links. Font licence: `fonts/OFL.txt` (Kalpurush, SIL Open Font License).
+- New `index.html` that redirects to the calculator.
+- The footer is updated to session 2026-27, with a note that universities without a new circular use last year's rules.
+
+### Leads API (backend)
+
+- The admin key fails closed: 503 when it is missing, too short or the placeholder value. The key is compared in constant time.
+- CSV export neutralises formula injection (cells starting with `=`, `+`, `-`, `@`, tab or carriage return are prefixed with `'`).
+- Input validation on `POST /api/leads` and on the `from`/`to` query parameters. Malformed payloads used to crash with a 500; they now return 400.
+- `X-Forwarded-For` is trusted only when `TRUST_PROXY` is set.
+- A disallowed CORS origin now gets 403 instead of 500.
+- Dependencies upgraded: fixes the critical `proxy-addr` advisory; better-sqlite3 13, express-rate-limit 8, helmet 8, dotenv 18.
+- `app.js` and `server.js` are split. New `DB_PATH` option. Tests added.
+- No database schema change. An existing `leads.db` works as it is.
+
+### Eligibility rules (2026-27)
+
+| University | Change | Status |
+|---|---|---|
+| DU | HSC 2026 only, SSC 2021-24 | verified 2026-27 |
+| JU | HSC 2025/26, SSC 2023/24, GPA floors lowered, Law moved to B | verified 2026-27 |
+| JnU | HSC 2026 only, SSC 2023/24, new GPA floors | verified 2026-27 |
+| RU | Arts/commerce 6.50 total, 3.00 each; science 7.50 / 3.50 | verified 2026-27 |
+| Agri cluster | SSC 2022-24, HSC 2025/26, 4.00 each; old 8.50 total removed | verified 2026-27 |
+| GST | Now 20 universities; GPA rules not yet published | count verified; GPA is last year's |
+| BUET | Unchanged | verified 2026-27 |
+| MBBS/BDS and AFMC | Physics, chemistry and biology each at least 3.50 | correction |
+| CUET | English at least B (3.00) | correction |
+| NU honours | Business Studies grouped with Humanities (4.50) | correction |
+| CU | Rows relabelled current/previous batch; numbers still 2025-26 | last year's rules |
+
+All other universities still use 2025-26 rules until their circulars are out. See `CIRCULARS.md` for sources and the list of open items.
+
+### How this release was tested
+
+- `npm test`: 11 engine tests and 8 API tests.
+- End-to-end run: calculator and API on one origin, form submitted in a real browser. The lead returned 201 and appeared in the protected CSV export with the Bangla name and the normalised mobile number intact.
+- Live checks: no key gives 401, wrong key 401, foreign origin 403, malformed payload 400, a formula-style name is neutralised, a spoofed IP is ignored, and the rate limit returns 429 after 20 requests per 15 minutes.
 
 ## Upgrading an existing deployment (same address)
 
@@ -168,42 +228,3 @@ npm test
 tests in `leads-backend/test/`. The API tests need the backend dependencies
 installed first (`npm ci` in `leads-backend/`). They use a temporary database
 and do not touch `data/leads.db`. Node 18 or newer.
-
-## Changelog (this release)
-
-Security fixes (leads API):
-
-- The admin key now fails closed: list and export return 503 unless
-  `ADMIN_API_KEY` is a real value of 16+ characters. The key is compared in
-  constant time.
-- CSV export no longer allows formula injection: cells that start with `=`,
-  `+`, `-`, `@`, tab or carriage return are prefixed with `'`.
-- Input validation on `POST /api/leads` and on the `from`/`to` query
-  parameters. Malformed payloads used to crash the request with a 500; they
-  now get a 400 with the list of problems.
-- A spoofed `X-Forwarded-For` header is no longer stored as the lead's IP.
-  Proxy headers are trusted only when `TRUST_PROXY` is set.
-- Dependencies upgraded, which fixes a critical advisory in `proxy-addr`
-  (pulled in via Express).
-
-Bug fixes:
-
-- Year rules (current-batch-only, second-timer limits and similar) were never
-  applied, because the reference year was the student's own HSC year. They
-  are now counted from `ADMISSION.currentHscBatch`.
-- The calculator never sent leads to the backend. It now POSTs to
-  `LEADS_API_URL`.
-- Form and API input validation tightened (see above).
-
-2026-27 rule updates:
-
-- JU, JnU and RU: lowered or changed GPA floors and year limits.
-- DU: HSC 2026 only, SSC 2021 to 2024.
-- MBBS and AFMC: physics and chemistry minimum 3.5.
-- CUET: English minimum B (3.0).
-- Other changes are listed in `CIRCULARS.md` (agriculture cluster, NU honours grouping).
-- CU: rows relabelled as current batch and previous batch, pending the
-  2026-27 circular.
-
-Universities without a published 2026-27 circular still use their 2025-26
-rules. See `CIRCULARS.md` for which sources have been checked.
