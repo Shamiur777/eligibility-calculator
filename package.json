@@ -1,0 +1,8 @@
+{
+  "name": "hulkenstein-eligibility-calculator",
+  "private": true,
+  "description": "Static admission eligibility calculator + leads API. See README.md.",
+  "scripts": {
+    "test": "node --test test/ && cd leads-backend && node --test test/"
+  }
+}

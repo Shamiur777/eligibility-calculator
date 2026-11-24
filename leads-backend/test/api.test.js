@@ -99,3 +99,10 @@ test("a spoofed X-Forwarded-For is not stored as the lead's IP unless TRUST_PROX
     assert.ok(lead && lead.ip_address !== "6.6.6.6");
   });
 });
+
+test("POST from a non-allowed origin gets 403 (not a 500), allowed origin gets 201", async () => {
+  await withServer({ ADMIN_API_KEY: KEY }, async (base) => {
+    assert.equal((await post(base, validLead, { origin: "https://evil.example" })).status, 403);
+    assert.equal((await post(base, { ...validLead, mobile: "01912345678" }, { origin: "https://edgecoursebd.com" })).status, 201);
+  });
+});

@@ -50,7 +50,7 @@ function createApp() {
         // allow no-origin requests (curl, server-to-server, Postman) and any
         // whitelisted origin
         if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
-        callback(new Error("Not allowed by CORS"));
+        callback(Object.assign(new Error("Not allowed by CORS"), { status: 403 }));
       }
     })
   );
@@ -96,6 +96,7 @@ function createApp() {
 
   // eslint-disable-next-line no-unused-vars
   app.use((err, req, res, next) => {
+    if (err.status === 403) return res.status(403).json({ ok: false, error: "origin_not_allowed" });
     console.error(err);
     res.status(500).json({ ok: false, error: "internal_error" });
   });

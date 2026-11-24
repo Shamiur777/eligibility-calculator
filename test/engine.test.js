@@ -92,3 +92,16 @@ test("CU: current batch sees only current-batch rows; previous batch only second
   assert.ok(cur.every((n) => n.includes("চলতি ব্যাচ")), cur.join(" | "));
   assert.ok(prev.every((n) => n.includes("আগের ব্যাচ")), prev.join(" | "));
 });
+
+test("Agri cluster 2026-27: 4.00 in each, SSC 2022-2024, HSC 2025/2026", () => {
+  const s = (o) => student(Object.assign({ sscGPA: 4.0, hscGPA: 4.0 }, o));
+  assert.ok(eligibleUnits(s(), "gst-agri").length > 0, "4.00 + 4.00 is enough (no 8.50 total stated for 2026-27)");
+  assert.deepEqual(eligibleUnits(s({ hscGPA: 3.9 }), "gst-agri"), []);
+  assert.deepEqual(eligibleUnits(s({ sscYear: B - 5, hscYear: B - 1 }), "gst-agri"), [], "SSC 2021 not allowed");
+});
+
+test("NU honours: commerce is grouped with humanities (4.50 total)", () => {
+  const comm = student({ hscTrack: "commerce", sscGPA: 2.25, hscGPA: 2.25 });
+  assert.ok(eligibleUnits(comm, "nu").length > 0);
+  assert.deepEqual(eligibleUnits(student({ sscGPA: 2.25, hscGPA: 2.25 }), "nu"), [], "science still needs 4.75");
+});
