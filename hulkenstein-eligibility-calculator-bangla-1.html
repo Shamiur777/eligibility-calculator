@@ -648,7 +648,8 @@ const UNIVERSITIES = [
     { unitName: "এমবিবিএস/বিডিএস (সাধারণ ট্র্যাক)", track: ["science"], hscGapMax: 1, combinedMin: 8.5, individualMin: 4.0, requiredSubjects: ["biology","physics","chemistry"], subjectMins: { biology: 3.5, physics: 3.5, chemistry: 3.5 } }
   ]},
   { id: "bnmc", code: "BNMC", name: "বাংলাদেশ নার্সিং ও মিডওয়াইফারি কাউন্সিল (বিএসসি/ডিপ্লোমা)", category: "Medical", units: [
-    { unitName: "বিএসসি ইন নার্সিং", track: ["science"], hscGapMax: 2, sscToHscGapMax: 4, combinedMin: 6.5, individualMin: 3.0, subjectMins: { biology: 2.5 }, maxGapYears: 3 },
+    // 2026-27 BNMC circular not yet published; last session: BSc 7.00 total, 3.00 each, science with biology; Diploma 6.00 / 2.50
+    { unitName: "বিএসসি ইন নার্সিং", track: ["science"], hscGapMax: 2, sscToHscGapMax: 4, combinedMin: 7.0, individualMin: 3.0, requiredSubjects: ["biology"], maxGapYears: 3 },
     { unitName: "ডিপ্লোমা ইন নার্সিং সায়েন্স অ্যান্ড মিডওয়াইফারি", track: ["science","arts","commerce"], hscGapMax: 2, sscToHscGapMax: 4, combinedMin: 6.0, individualMin: 2.5, maxGapYears: 3 }
   ]},
   { id: "ruet", code: "RUET", name: "রাজশাহী প্রকৌশল ও প্রযুক্তি বিশ্ববিদ্যালয় (রুয়েট)", category: "Engineering", units: [
@@ -664,7 +665,8 @@ const UNIVERSITIES = [
     { unitName: "ইঞ্জিনিয়ারিং প্রোগ্রাম", track: ["science"], hscGapMax: 0, sscToHscGapMax: 3, sscMin: 4.0, hscMin: 5.0, subjectMins: { math: 5.0, physics: 5.0, chemistry: 5.0 } }
   ]},
   { id: "butex", code: "BUTEX", name: "বাংলাদেশ টেক্সটাইল বিশ্ববিদ্যালয় (বুটেক্স)", category: "Engineering", units: [
-    { unitName: "টেক্সটাইল ইঞ্জিনিয়ারিং প্রোগ্রাম", track: ["science"], hscGapMax: 0, sscMin: 4.0, hscMin: 4.0, subjectCombinedMin: 17.5, subjectCombinedSubjects: ["math","physics","chemistry","english"], subjectMins: { math: 3.5, physics: 3.5, chemistry: 3.5, english: 3.5 } }
+    // 2026-27 circular (19 Nov 2026): SSC & HSC >= 4.00; HSC math+physics+chemistry+english >= 16.50, each >= 3.50
+    { unitName: "টেক্সটাইল ইঞ্জিনিয়ারিং প্রোগ্রাম", track: ["science"], hscGapMax: 0, sscMin: 4.0, hscMin: 4.0, subjectCombinedMin: 16.5, subjectCombinedSubjects: ["math","physics","chemistry","english"], subjectMins: { math: 3.5, physics: 3.5, chemistry: 3.5, english: 3.5 } }
   ]},
   { id: "sust", code: "SUST", name: "শাহজালাল বিজ্ঞান ও প্রযুক্তি বিশ্ববিদ্যালয় (সাস্ট)", category: "Engineering", units: [
     { unitName: "ইউনিট A (বিজ্ঞান)", track: ["science"], hscGapMax: 1, combinedMin: 6.5, individualMin: 3.0, subjectMins: { math: 3.0 } },
@@ -674,7 +676,11 @@ const UNIVERSITIES = [
     { unitName: "ইঞ্জিনিয়ারিং ও বিবিএ প্রোগ্রাম", track: ["science"], hscGapMax: 1, sscMin: 4.5, hscMin: 4.5, subjectMins: { math: 5.0, physics: 5.0, chemistry: 5.0, english: 4.0 } }
   ]},
   { id: "mist", code: "MIST", name: "মিলিটারি ইনস্টিটিউট অব সায়েন্স অ্যান্ড টেকনোলজি (মিস্ট)", category: "Engineering", units: [
-    { unitName: "ইঞ্জিনিয়ারিং ও আর্কিটেকচার", track: ["science"], hscGapMax: 1, sscToHscGapMax: 3, sscMin: 4.0, subjectCombinedMin: 18.0, subjectCombinedSubjects: ["math","physics","chemistry","english"], subjectMins: { math: 4.0, physics: 4.0, chemistry: 4.0 } }
+    // 2026-27 official circular (MIST notice, images of 25 Nov 2026):
+    // A/B: SSC 2023/2024 >= 4.00 (circular: without 4th subject); HSC 2025/2026, math+physics+chemistry >= 12.00, each >= 3.50
+    { unitName: "A/B ইউনিট (ইঞ্জিনিয়ারিং, ইউআরপি ও আর্কিটেকচার)", track: ["science"], hscGapMax: 1, sscMaxYearsBeforeBatch: 3, sscMin: 4.0, subjectCombinedMin: 12.0, subjectCombinedSubjects: ["math","physics","chemistry"], subjectMins: { math: 3.5, physics: 3.5, chemistry: 3.5 } },
+    // C: HSC 2025/2026, SSC and HSC >= 3.50 each
+    { unitName: "C ইউনিট (সায়েন্স)", track: ["science"], hscGapMax: 1, sscMin: 3.5, hscMin: 3.5 }
   ]},
   { id: "nsu", code: "NSU", name: "নর্থ সাউথ বিশ্ববিদ্যালয়", category: "Private", units: [
     { unitName: "সাধারণ প্রোগ্রাম", track: ["science","arts","commerce"], combinedMin: 8.0, individualMin: 3.5 }

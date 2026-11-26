@@ -60,13 +60,16 @@ Do these when deploying:
 
 | University | Change | Status |
 |---|---|---|
-| DU | HSC 2026 only, SSC 2021-24 | verified 2026-27 |
+| DU (incl. IBA) | HSC 2026 only, SSC 2021-24; IBA 8.00 total, 3.50 each | verified 2026-27 |
 | JU | HSC 2025/26, SSC 2023/24, GPA floors lowered, Law moved to B | verified 2026-27 |
 | JnU | HSC 2026 only, SSC 2023/24, new GPA floors | verified 2026-27 |
 | RU | Arts/commerce 6.50 total, 3.00 each; science 7.50 / 3.50 | verified 2026-27 |
 | Agri cluster | SSC 2022-24, HSC 2025/26, 4.00 each; old 8.50 total removed | verified 2026-27 |
-| GST | Now 20 universities; GPA rules not yet published | count verified; GPA is last year's |
+| GST | Now 20 universities; 2026-27 GPA not yet published, calculator uses the official 2025-26 rules (A 7.00/3.25, B 6.00/3.00, C 6.25/3.00) | count verified; GPA is last year's (confirmed) |
 | BUET | Unchanged | verified 2026-27 |
+| MIST | Units A/B: SSC 2023/24 >= 4.00, HSC 2025/26, math+physics+chemistry >= 12.00 with each >= 3.50 (was a 4-subject total of 18). New Unit C (Science): SSC and HSC >= 3.50 each | verified 2026-27 (official circular) |
+| BUTEX | Math+physics+chemistry+English >= 16.50 (was 17.50), each >= 3.50; SSC and HSC >= 4.00 | verified 2026-27 |
+| Nursing (BNMC) BSc | Total 7.00 (was 6.50), 3.00 each, science with biology | last session's official rule; 2026-27 not yet published |
 | MBBS/BDS and AFMC | Physics, chemistry and biology each at least 3.50 | correction |
 | CUET | English at least B (3.00) | correction |
 | NU honours | Business Studies grouped with Humanities (4.50) | correction |
@@ -76,7 +79,7 @@ All other universities still use 2025-26 rules until their circulars are out. Se
 
 ### How this release was tested
 
-- `npm test`: 11 engine tests and 8 API tests.
+- `npm test`: 15 engine tests and 8 API tests.
 - End-to-end run: calculator and API on one origin, form submitted in a real browser. The lead returned 201 and appeared in the protected CSV export with the Bangla name and the normalised mobile number intact.
 - Live checks: no key gives 401, wrong key 401, foreign origin 403, malformed payload 400, a formula-style name is neutralised, a spoofed IP is ignored, and the rate limit returns 429 after 20 requests per 15 minutes.
 

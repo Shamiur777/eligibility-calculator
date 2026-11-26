@@ -26,7 +26,8 @@ function student(over) {
 }
 function eligibleUnits(s, uniId) {
   const hit = evaluateAll(s).find((r) => r.uni.id === uniId);
-  return hit ? hit.eligibleUnits.map((u) => u.unit.unitName) : [];
+  // spread: copy into this realm so deepEqual(…, []) works on sandbox arrays
+  return hit ? [...hit.eligibleUnits.map((u) => u.unit.unitName)] : [];
 }
 
 test("current-batch-only universities reject an older HSC batch", () => {
@@ -104,4 +105,43 @@ test("NU honours: commerce is grouped with humanities (4.50 total)", () => {
   const comm = student({ hscTrack: "commerce", sscGPA: 2.25, hscGPA: 2.25 });
   assert.ok(eligibleUnits(comm, "nu").length > 0);
   assert.deepEqual(eligibleUnits(student({ sscGPA: 2.25, hscGPA: 2.25 }), "nu"), [], "science still needs 4.75");
+});
+
+// ---- Updates supplied 2026-11-26 ("Updates on the remaining universities") ----
+
+test("MIST 2026-27: SSC 4.00, math+physics+chemistry >= 12.00 with each >= 3.50, second-timers allowed", () => {
+  const subj = (m, p, c) => ({ physics: p, chemistry: c, math: m, biology: 0, english: 2.0 });
+  const ab = (u) => u.filter((n) => !n.startsWith("C "));
+  const s = (o) => student(Object.assign({ sscGPA: 4.0, hscGPA: 4.0, subjects: subj(4, 4, 4) }, o));
+  assert.ok(ab(eligibleUnits(s(), "mist")).length > 0, "12.00 total, English 2.0 is fine now");
+  assert.ok(ab(eligibleUnits(s({ hscYear: B - 1, sscYear: B - 3 }), "mist")).length > 0, "HSC 2025 second-timer");
+  assert.deepEqual(ab(eligibleUnits(s({ subjects: subj(5, 3.25, 5) }), "mist")), [], "physics below 3.50");
+  assert.deepEqual(ab(eligibleUnits(s({ subjects: subj(4, 3.5, 4) }), "mist")), [], "total 11.50");
+  assert.deepEqual(ab(eligibleUnits(s({ sscGPA: 3.9 }), "mist")), []);
+});
+
+test("BUTEX 2026-27: 4-subject total 16.50, each >= 3.50, SSC & HSC >= 4.00", () => {
+  const s = student({ sscGPA: 4, hscGPA: 4, subjects: { physics: 4, chemistry: 4, math: 4.5, biology: 0, english: 4 } }); // 16.50
+  assert.ok(eligibleUnits(s, "butex").length > 0);
+  const low = student({ sscGPA: 4, hscGPA: 4, subjects: { physics: 4, chemistry: 4, math: 4, biology: 0, english: 4.25 } }); // 16.25
+  assert.deepEqual(eligibleUnits(low, "butex"), []);
+});
+
+test("Nursing BSc: total 7.00, 3.00 each, science with biology", () => {
+  const s = (sum, bio) => student({ sscGPA: 3.5, hscGPA: sum - 3.5, subjects: { physics: 3, chemistry: 3, math: 3, biology: bio, english: 3 } });
+  const bsc = (x) => eligibleUnits(x, "bnmc").filter((n) => n.includes("বিএসসি"));
+  assert.equal(bsc(s(7.0, 3.0)).length, 1);
+  assert.equal(bsc(s(6.75, 3.0)).length, 0, "6.75 total is below 7.00");
+  assert.equal(bsc(s(7.0, 0)).length, 0, "biology required");
+});
+
+test("MIST 2026-27 (official circular): Units A/B need SSC 2023/2024; new Unit C (Science) needs 3.50 in each exam", () => {
+  const weak = { physics: 3, chemistry: 3, math: 3, biology: 0, english: 3 };
+  const ab = (u) => u.filter((n) => !n.startsWith("C "));
+  assert.deepEqual(ab(eligibleUnits(student({ sscYear: B - 4, hscYear: B - 1 }), "mist")), [], "SSC 2022 not allowed for A/B");
+  const c = eligibleUnits(student({ sscGPA: 3.5, hscGPA: 3.5, subjects: weak }), "mist");
+  assert.equal(c.length, 1, "only Unit C: " + c.join(" | "));
+  assert.ok(c[0].startsWith("C "));
+  assert.deepEqual(eligibleUnits(student({ sscGPA: 3.5, hscGPA: 3.4, subjects: weak }), "mist"), []);
+  assert.deepEqual(eligibleUnits(student({ hscYear: B - 2, sscGPA: 3.5, hscGPA: 3.5, subjects: weak }), "mist"), [], "HSC 2024 not allowed");
 });
