@@ -45,6 +45,16 @@ Do these when deploying:
 - New `index.html` that redirects to the calculator.
 - The footer is updated to session 2026-27, with a note that universities without a new circular use last year's rules.
 
+### UI/UX and accessibility pass
+
+Found with a full Playwright sweep (installed Chrome, 320-1366px, keyboard, print, axe) and fixed:
+
+- Bugs: every result category ended in a huge blue arrow icon (a CSS selector never matched); print/PDF output had white text on a white page; an HSC year at or before the SSC year was accepted; a long name without spaces pushed the results page sideways; science subject GPAs stayed in the submission after switching to a non-science group; a category tab with no results showed a blank area; `+8801...` / `8801...` mobile numbers were rejected; the browser Back button left the page and lost the form.
+- Form: the Next/Check buttons are always clickable. Pressing them explains every problem under its field in Bangla and moves the cursor to the first one (previously the button was just greyed out with no reason). Optional fields are marked. Phones get the right keyboard (decimal / phone) and autofill.
+- Navigation: visible "ধাপ X / ৩" step label; browser Back/Forward moves between steps; results have an "edit details" button that keeps everything typed; the zero-results screen has a direct fix button; the first category with results opens by default.
+- Accessibility: 0 axe violations on all steps at 375px and 1366px. Clear keyboard focus rings, focus moves to each new step, result tabs announce their state, the result count is announced, the university code badges and small text pass contrast, all touch targets are at least 44px, no text under 12px, reduced-motion respected.
+- Visual: same dark/green HulkenStein look; result tabs and actions are separated into two rows, tabs scroll sideways on phones, the Bangla brand name moved under the main title.
+
 ### Leads API (backend)
 
 - The admin key fails closed: 503 when it is missing, too short or the placeholder value. The key is compared in constant time.
@@ -80,6 +90,7 @@ All other universities still use 2025-26 rules until their circulars are out. Se
 ### How this release was tested
 
 - `npm test`: 15 engine tests and 8 API tests.
+- Playwright sweep of the whole page (installed Chrome): 4 viewport widths, all flows, validation, keyboard-only use, browser Back/Forward, print, axe accessibility scan (0 violations).
 - End-to-end run: calculator and API on one origin, form submitted in a real browser. The lead returned 201 and appeared in the protected CSV export with the Bangla name and the normalised mobile number intact.
 - Live checks: no key gives 401, wrong key 401, foreign origin 403, malformed payload 400, a formula-style name is neutralised, a spoofed IP is ignored, and the rate limit returns 429 after 20 requests per 15 minutes.
 
